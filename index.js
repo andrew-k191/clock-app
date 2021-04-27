@@ -1,62 +1,87 @@
+/*---Time Logic ---*/
 const currentTime = () => {
-    const dateObj = new Date();
-    // hour, minutes, and seconds
-    const [hour, minutes, seconds] = [dateObj.getHours(), dateObj.getMinutes(), dateObj.getSeconds()];
-    // Selecting actualTime div
     const actualTime = document.querySelector('.actualTime');
-    actualTime.innerHTML = zeroAddition(hour) + correctHour(hour) + '<span>:</span>' + zeroAddition(minutes) + minutes + '<span>:</span>' + zeroAddition(seconds) + seconds + ' ' + whichMeridiem(hour);
+    const timeObj = new Date();
+    const [hour, minutes, seconds] = [
+        addLeadingZero(timeObj.getHours()), 
+        addLeadingZero(timeObj.getMinutes()), 
+        addLeadingZero(timeObj.getSeconds())
+    ];
+
+    const isAm = hour < 12 || hour === 0;
+    let amPm = isAm ? 'AM' : 'PM';
+    actualTime.textContent = `${correctHour(hour)}:${minutes}:${seconds} ${amPm}`;
 };
 
-const currentDate = () => {
-    const dateObj = new Date();
-    // current day, current day of the week, current month, current year
-    const [today, weekday, month, year] = [dateObj.getDate(), dateObj.getDay(), dateObj.getMonth(), dateObj.getFullYear()];
-    // Arrays for weekday and month
-    const week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-    // Selecting actualDate div
-    const actualDate = document.querySelector('.actualDate');
-    actualDate.innerHTML = week[weekday] + ', ' + months[month] + ' ' + today + whichSuffix(today) + ' ' + year;
-}
-
-// Zero Addition
-const zeroAddition = (value) => {
-    return ((value < 10) ? 0 : '');
+const addLeadingZero = (number) => {
+    return ((number < 10) ? ('0' + number) : number);
 };
-// This function should eliminate 010, 011, 012 hour from being displayed
+
 const correctHour = (whatHour) => {
-    if (whatHour >= 13) {
-        const hourCorrection = whatHour - 12;
-        if (hourCorrection >= 10) {
-            return hourCorrection;
-        } 
-        return '0' + hourCorrection;
-    }
+    // whatHour value will be reassigned if either condition is true
+    whatHour = (whatHour >= 13) ? (whatHour - 12) : whatHour;
+    whatHour = (whatHour === 0) ? (whatHour + 12) : whatHour;
     return whatHour;
 };
-// AM or PM
-const whichMeridiem = (whatHour) => {
-    return ((whatHour < 12) ? 'AM' : 'PM');
+
+/*---Date Logic---*/
+const currentDate = () => {
+    const actualDate = document.querySelector('.actualDate');
+    const dateObj = new Date();
+    const [dateToday, weekday, month, year] = [
+        addDateSuffix(dateObj.getDate()), 
+        dateObj.getDay(), 
+        dateObj.getMonth(), 
+        dateObj.getFullYear()
+    ];
+    actualDate.textContent = `${week[weekday]}, ${months[month]} ${dateToday} ${year}`;
+    // week[weekday] + ', ' + months[month] + ' ' + date + addDateSuffix(date) + ' ' + year;
+}
+
+const addDateSuffix = (dateOfMonth) => {
+    if ((dateOfMonth < 10) || (dateOfMonth > 20)) {
+        switch (dateOfMonth % 10) {
+            case 1:
+                return dateOfMonth + 'st';
+            case 2:
+                return dateOfMonth + 'nd';
+            case 3:
+                return dateOfMonth + 'rd';
+        }
+    }
+    return dateOfMonth + 'th';
 };
 
-// Adds a suffix, 'st', 'nd', 'rd', 'th';
-const whichSuffix = (dayOfMonth) => {
-    if (([1, 21, 31].indexOf(dayOfMonth)) !== -1) {
-        return 'st';
-    } 
-    else if (([2, 22].indexOf(dayOfMonth)) !== -1){
-        return 'nd';
-    }
-    else if (([3, 23].indexOf(dayOfMonth)) !== -1) {
-        return 'rd';
-    } 
-    else {
-        return 'th';
-    }
-};
+const week = [
+    'Sunday', 
+    'Monday', 
+    'Tuesday', 
+    'Wednesday', 
+    'Thursday', 
+    'Friday', 
+    'Saturday'
+];
 
-// Generates 'live/tick' feature of clock
-setInterval(currentTime, 1000); 
-setInterval(currentDate, 1000);
+const months = [
+    'January', 
+    'February', 
+    'March', 
+    'April', 
+    'May', 
+    'June', 
+    'July', 
+    'August', 
+    'September', 
+    'October', 
+    'November', 
+    'December'
+];
+
+currentTime();
+currentDate();
+setInterval(() => {
+    currentDate();
+    currentTime();
+});
+
 
